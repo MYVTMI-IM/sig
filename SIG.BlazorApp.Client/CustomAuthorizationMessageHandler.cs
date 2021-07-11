@@ -11,7 +11,7 @@ namespace SIG.BlazorApp.Client
         {
             ConfigureHandler(
                 authorizedUrls: new[] { "https://localhost:7071", "https://proud-meadow-07959ec0f.azurestaticapps.net/" }
-            );
+            );            
         }
     }
 }

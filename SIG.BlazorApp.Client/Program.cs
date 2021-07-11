@@ -1,3 +1,5 @@
+using Blazored.LocalStorage;
+using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +24,9 @@ namespace SIG.BlazorApp.Client
 
             builder.Services.AddScoped<CustomAuthorizationMessageHandler>();
             builder.Services.AddScoped<CorsRequestAuthorizationMessageHandler>();
+
+            builder.Services.AddBlazoredLocalStorage();
+            builder.Services.AddBlazoredSessionStorage();
 
             builder.Services.AddHttpClient("WebAPI",
                     client => client.BaseAddress = new Uri(baseAddress))

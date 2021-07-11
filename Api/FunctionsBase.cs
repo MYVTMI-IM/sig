@@ -36,8 +36,8 @@ namespace BlazorApp.Api
             foreach(var header in req.Headers)
                 log.LogInformation($"Request Header - [{header.Key}] :: [{header.Value}]");
 
-            var token = req.Headers.ContainsKey("authorization") ?
-                        req.Headers["authorization"].First()[7..]
+            var token = req.Headers.ContainsKey("CustomToken") ?
+                        req.Headers["CustomToken"].First()
                         : string.Empty;
 
             log.LogInformation($"Validating [Token]: {token}");
