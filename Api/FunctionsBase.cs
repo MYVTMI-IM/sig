@@ -25,8 +25,14 @@ namespace BlazorApp.Api
             var baseUrl = "https://dev-15099932.okta.com/oauth2/default/v1/introspect";
             
             var token = req.Headers.ContainsKey("authorization") ? 
-                        req.Headers["authorization"].First()[7..]                        
+                        req.Headers["authorization"].First()                       
                         : string.Empty;
+
+            log.LogInformation($"Validating Token Full: {token}");
+
+            token = token[7..];
+
+            log.LogInformation($"Validating Token Trimmed: {token}");
 
             if (string.IsNullOrWhiteSpace(token))
                 return TokenResult.Fail();
@@ -43,7 +49,7 @@ namespace BlazorApp.Api
             var content = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<TokenResult>(content);
             
-            log.LogInformation($"Validating Token: {content}");
+            log.LogInformation($"Validating Token Result: {content}");
 
             if (response.IsSuccessStatusCode)            
                 return result;            
