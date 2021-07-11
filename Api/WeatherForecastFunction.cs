@@ -1,16 +1,17 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
-using BlazorApp.Shared;
+using SIG.BlazorApp.Shared;
 
 namespace BlazorApp.Api
 {
-    public static class WeatherForecastFunction
+    public class WeatherForecastFunction : FunctionsBase
     {
         private static string GetSummary(int temp)
         {
@@ -33,12 +34,17 @@ namespace BlazorApp.Api
         }
 
         [FunctionName("WeatherForecast")]
-        public static IActionResult Run(
+        public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
             ILogger log)
         {
             var randomNumber = new Random();
             var temp = 0;
+
+            var validation = await ValidateToken(req, log);
+
+            if (!validation.Active)
+                return new ForbidResult();
 
             var result = Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {

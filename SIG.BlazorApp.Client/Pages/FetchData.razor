@@ -1,6 +1,5 @@
-@page "/fetchdata"
-@using SIG.BlazorApp.Shared
-@inject HttpClient Http
+﻿@page "/fetchdata"
+@inject IHttpClientFactory ClientFactory
 
 <h1>Weather forecast</h1>
 
@@ -40,13 +39,19 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-      try
-      {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("/api/WeatherForecast");
-      }
-      catch (Exception ex)
-      {
-        Console.WriteLine(ex.ToString());
-      }
+        try
+        {
+            var client = ClientFactory.CreateClient("WebAPI");
+
+            forecasts = await client.GetFromJsonAsync<WeatherForecast[]>("/api/WeatherForecast");
+        }/*
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        } */
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
     }
 }
