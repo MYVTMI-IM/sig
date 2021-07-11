@@ -38,22 +38,29 @@ namespace BlazorApp.Api
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
             ILogger log)
         {
-            var randomNumber = new Random();
-            var temp = 0;
-
-            var validation = await ValidateToken(req, log);
-
-            if (!validation.Active)
-                return new ForbidResult();
-
-            var result = Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            try
             {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = temp = randomNumber.Next(-20, 55),
-                Summary = GetSummary(temp)
-            }).ToArray();
+                var randomNumber = new Random();
+                var temp = 0;
 
-            return new OkObjectResult(result);
+                var validation = await ValidateToken(req, log);
+
+                if (!validation.Active)
+                    return new ForbidResult();
+
+                var result = Enumerable.Range(1, 5).Select(index => new WeatherForecast
+                {
+                    Date = DateTime.Now.AddDays(index),
+                    TemperatureC = temp = randomNumber.Next(-20, 55),
+                    Summary = GetSummary(temp)
+                }).ToArray();
+
+                return new OkObjectResult(result);
+            }
+            catch (Exception ex)
+            {
+                return new ObjectResult(new { ex.Message });
+            }
         }
     }
 }
