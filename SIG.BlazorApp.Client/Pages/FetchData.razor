@@ -43,6 +43,8 @@ else
         {
             var client = ClientFactory.CreateClient("WebAPI");
 
+            client.DefaultRequestHeaders.Add("Test-Token", "1234");
+
             forecasts = await client.GetFromJsonAsync<WeatherForecast[]>("/api/WeatherForecast");
         }/*
         catch (AccessTokenNotAvailableException exception)
