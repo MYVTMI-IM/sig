@@ -33,6 +33,9 @@ namespace BlazorApp.Api
             
             var issuer = "https://dev-15099932.okta.com/oauth2/default";
 
+            foreach(var header in req.Headers)
+                log.LogInformation($"Request Header - [{header.Key}] :: [{header.Value}]");
+
             var token = req.Headers.ContainsKey("authorization") ?
                         req.Headers["authorization"].First()[7..]
                         : string.Empty;
