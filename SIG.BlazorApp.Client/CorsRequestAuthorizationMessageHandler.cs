@@ -8,7 +8,7 @@ namespace SIG.BlazorApp.Client
     {
         public CorsRequestAuthorizationMessageHandler(IAccessTokenProvider provider, NavigationManager navigationManager, IConfiguration config) : base(provider, navigationManager)
         {
-            ConfigureHandler(new[] { config["ServerApi:BaseAddress"] });
+            ConfigureHandler(new[] { config["ServerApi:BaseAddress"], "https://proud-meadow-07959ec0f.azurestaticapps.net/" });
         }
     }
 }

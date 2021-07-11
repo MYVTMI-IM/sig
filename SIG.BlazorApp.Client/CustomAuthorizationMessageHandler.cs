@@ -10,8 +10,8 @@ namespace SIG.BlazorApp.Client
             : base(provider, navigationManager)
         {
             ConfigureHandler(
-                authorizedUrls: new[] { "https://localhost:7071", "https://proud-meadow-07959ec0f.azurestaticapps.net/" },
-                scopes: new[] { "example.read", "example.write" });
+                authorizedUrls: new[] { "https://localhost:7071", "https://proud-meadow-07959ec0f.azurestaticapps.net/" }
+            );
         }
     }
 }
