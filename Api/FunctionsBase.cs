@@ -46,6 +46,9 @@ namespace BlazorApp.Api
 
             var _httpClient = new HttpClient();
             var response = await _httpClient.PostAsync(baseUrl, request);
+
+            log.LogInformation($"Validating Token StatusCode: {response.StatusCode}");            
+
             var content = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<TokenResult>(content);
             
