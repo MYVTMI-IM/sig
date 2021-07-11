@@ -46,7 +46,7 @@ namespace BlazorApp.Api
                 var validation = await ValidateToken(req, log);
 
                 if (!validation.Active)
-                    return new ForbidResult();
+                    return new OkObjectResult(new WeatherForecast[0]);
 
                 var result = Enumerable.Range(1, 5).Select(index => new WeatherForecast
                 {

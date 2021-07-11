@@ -42,7 +42,9 @@ namespace BlazorApp.Api
             var response = await _httpClient.PostAsync(baseUrl, request);
             var content = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<TokenResult>(content);
-                        
+            
+            log.LogInformation($"Validating Token: {content}");
+
             if (response.IsSuccessStatusCode)            
                 return result;            
 
