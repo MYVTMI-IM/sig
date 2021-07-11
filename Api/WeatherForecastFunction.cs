@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 using SIG.BlazorApp.Shared;
@@ -13,6 +14,8 @@ namespace BlazorApp.Api
 {
     public class WeatherForecastFunction : FunctionsBase
     {
+        public WeatherForecastFunction(IConfiguration configuration) : base(configuration) { }
+
         private static string GetSummary(int temp)
         {
             var summary = "Mild";

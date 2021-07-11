@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System;
@@ -13,49 +16,73 @@ using System.Threading.Tasks;
 
 namespace BlazorApp.Api
 {
-    public class FunctionsBase
+    public abstract class FunctionsBase
     {
-        protected static async Task<TokenResult> ValidateToken(        
+        protected readonly IConfiguration configuration;
+
+        public FunctionsBase(IConfiguration configuration)
+        {
+            this.configuration = configuration;
+        }
+
+        protected async Task<TokenResult> ValidateToken(        
         HttpRequest req, ILogger log,
         CancellationToken ct = default)
         {
-            log.LogInformation("Validating Token");
+            log.LogInformation("Starting Validating Token");
             
-            //Call the Okta introspection API to validate the token.
-            var baseUrl = "https://dev-15099932.okta.com/oauth2/default/v1/introspect";
-            
-            var token = req.Headers.ContainsKey("authorization") ? 
-                        req.Headers["authorization"].First()                       
+            var issuer = "https://dev-15099932.okta.com/oauth2/default";
+
+            var token = req.Headers.ContainsKey("authorization") ?
+                        req.Headers["authorization"].First()[7..]
                         : string.Empty;
 
-            log.LogInformation($"Validating Token Full: {token}");
+            log.LogInformation($"Validating [Token]: {token}");
 
-            token = token[7..];
+            var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+                issuer + "/.well-known/oauth-authorization-server",
+                new OpenIdConnectConfigurationRetriever(),
+                new HttpDocumentRetriever());
 
-            log.LogInformation($"Validating Token Trimmed: {token}");
+            var discoveryDocument = await configurationManager.GetConfigurationAsync(ct);
+            var signingKeys = discoveryDocument.SigningKeys;
 
-            if (string.IsNullOrWhiteSpace(token))
-                return TokenResult.Fail();
-
-            var request = new FormUrlEncodedContent(new[]
+            var validationParameters = new TokenValidationParameters
             {
-               new KeyValuePair<string, string>("token", token),
-               new KeyValuePair<string, string>("token_type_hint", "access_token"),
-               new KeyValuePair<string, string>("client_id", "0oa170e5plBIZCHav5d7")
-            });
+                RequireExpirationTime = true,
+                RequireSignedTokens = true,
+                ValidateIssuer = true,
+                ValidIssuer = issuer,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKeys = signingKeys,
+                ValidateLifetime = true,
+                ValidateAudience = false,
+                // Allow for some drift in server time
+                // (a lower value is better; we recommend two minutes or less)
+                ClockSkew = TimeSpan.FromMinutes(2),
+                // See additional validation for aud below
+            };
 
-            var _httpClient = new HttpClient();
-            var response = await _httpClient.PostAsync(baseUrl, request);
+            try
+            {
+                var principal = new JwtSecurityTokenHandler()
+                    .ValidateToken(token, validationParameters, out var rawValidatedToken);
 
-            log.LogInformation($"Validating Token StatusCode: {response.StatusCode}");            
+                log.LogInformation($"Validating Token Result: {JsonConvert.SerializeObject(rawValidatedToken)}");
 
-            var content = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<TokenResult>(content);
-            
-            log.LogInformation($"Validating Token Result: {content}");
-
-            if (response.IsSuccessStatusCode)            
-                return result;            
+                return new TokenResult
+                {
+                    Active = rawValidatedToken != null
+                };
+            }
+            catch (SecurityTokenValidationException ex)
+            {
+                log.LogInformation($"SecurityTokenValidationException: {ex.Message}");
+            }
+            catch (Exception ex) 
+            {
+                log.LogInformation($"Validating Token Exception: {ex.Message}");
+            }
 
             return TokenResult.Fail();            
         }
@@ -71,6 +98,13 @@ namespace BlazorApp.Api
                 return new TokenResult
                 {
                     Active = false
+                };
+            }
+            public static TokenResult Success()
+            {
+                return new TokenResult
+                {
+                    Active = true
                 };
             }
         }
